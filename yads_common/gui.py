@@ -24,10 +24,17 @@ def detect_system_dark_mode() -> bool:
     try:
         # Check color-scheme (modern standard)
         res1 = subprocess.run(['gsettings', 'get', 'org.gnome.desktop.interface', 'color-scheme'], capture_output=True, text=True, timeout=1)
-        if 'dark' in res1.stdout.lower(): return True
+        out1 = res1.stdout.lower()
+        if 'dark' in out1 or 'prefer-dark' in out1: return True
+        
         # Check gtk-theme (fallback for Mint/Cinnamon/Old GNOME)
         res2 = subprocess.run(['gsettings', 'get', 'org.gnome.desktop.interface', 'gtk-theme'], capture_output=True, text=True, timeout=1)
         if 'dark' in res2.stdout.lower(): return True
+        
+        # Check KDE (Plasma)
+        # Some newer KDE versions use different keys, but ColorScheme is still a good fallback
+        res3 = subprocess.run(['kreadconfig5', '--group', 'General', '--key', 'ColorScheme'], capture_output=True, text=True, timeout=1)
+        if 'dark' in res3.stdout.lower(): return True
     except:
         pass
 

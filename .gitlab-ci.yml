@@ -1,0 +1,29 @@
+# GitLab CI/CD for YADS Common
+# Shared utilities and GUI components
+
+stages:
+  - lint
+  - security
+
+secret_scan:
+  stage: security
+  image: 
+    name: aquasec/trivy:latest
+    entrypoint: [""]
+  script:
+    - trivy fs --scanners secret --exit-code 1 .
+  allow_failure: false
+  only:
+    - merge_requests
+    - main
+
+lint-python:
+  stage: lint
+  image: python:3.12-slim
+  script:
+    - pip install flake8
+    - flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+    - flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+  only:
+    - merge_requests
+    - main
